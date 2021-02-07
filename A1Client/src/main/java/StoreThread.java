@@ -19,11 +19,12 @@ public class StoreThread implements Runnable {
   private CountDownLatch totalLatch;
   private CountDownLatch centralRegion;
   private CountDownLatch westRegion;
+  private ShareStats stats;
 
   public StoreThread(Integer storeID, Integer numOfCustomers, Integer maxItemID,
       Integer numOfPurchases, Integer numOfItems, String date, Integer IPAddresse,
       CountDownLatch phaseLatch, CountDownLatch totalLatch, CountDownLatch centralRegion,
-      CountDownLatch westRegion ){
+      CountDownLatch westRegion, ShareStats stats){
     this.storeID = storeID;
     this.numOfCustomers = numOfCustomers;
     this.maxItemID = maxItemID;
@@ -35,6 +36,7 @@ public class StoreThread implements Runnable {
     this.totalLatch = totalLatch;
     this.centralRegion = centralRegion;
     this.westRegion = westRegion;
+    this.stats = stats;
   }
 
 
@@ -54,7 +56,7 @@ public class StoreThread implements Runnable {
     apiclient.setBasePath("http://localhost:8080/Assignment1_war_exploded");
     PurchaseApi apiInstance = new PurchaseApi(apiclient);
     int successfulPost = 0;
-    int failPost = 0;
+    int failedPost = 0;
     //Generate the default number of items purchased (randomly select itemID) and set amount to 1.
     Purchase body = new Purchase();
     for (int i = 0; i < this.numOfItems; i++){
@@ -67,7 +69,7 @@ public class StoreThread implements Runnable {
 
     // sending total of numpurchases * 9 hours of post requests
     for (int i = 0; i < this.numOfPurchase * 9; i++) {
-      System.out.println("This is store " + this.storeID + "with request # " + i);
+//      System.out.println("This is store " + this.storeID + "with request # " + i);
       //select custID
       //(storeIDx1000) and (storeIDx1000)+number of customers/store
       Integer min = this.storeID * 1000;
@@ -86,13 +88,17 @@ public class StoreThread implements Runnable {
           this.westRegion.countDown();
         }
       } catch (ApiException e) {
-        failPost ++;
+        failedPost ++;
         //log error to stderr
+        System.err.printf("Failed to Send a Request!");
         e.printStackTrace();
       }
 
     }
-    //update total sucessful count using lock
+    //update total successful count using lock
+    this.stats.addSuccessfulPosts(successfulPost);
+    this.stats.addSuccessfulPosts(failedPost);
+
     //count down each thread
     this.phaseLatch.countDown();
     this.totalLatch.countDown();

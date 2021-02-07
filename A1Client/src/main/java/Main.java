@@ -4,6 +4,7 @@ import io.swagger.client.model.*;
 import io.swagger.client.api.PurchaseApi;
 
 import java.io.File;
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -44,6 +45,7 @@ public class Main {
     Integer numOfItems = cl.getNumOfItems();
     String date = cl.getDate();
     Integer IPAddress = cl.getIPAddress();
+    ShareStats stats = new ShareStats();
 
     Integer numThreadOne = (int ) Math.floor(maxStores / 4.0);
     Integer numThreadTwo = (int ) Math.floor(maxStores / 4.0);
@@ -56,10 +58,11 @@ public class Main {
     //Phase one
     CountDownLatch phase1Latch = new CountDownLatch(numThreadOne);
     System.out.println("Phase 1");
-    for (int i = 1; i <= numThreadOne; i++) {
+    Timestamp startTime = new Timestamp(System.currentTimeMillis());
+    for (int i = 0; i < numThreadOne; i++) {
       // creation a thread object implmenting runnable
       // need  custID and itemIDs
-      Runnable thread = new StoreThread(i, numOfCustomers, maxItemID, numOfPurchase, numOfItems, date, IPAddress, phase1Latch, totalLatch, centralRegion, westRegion);
+      Runnable thread = new StoreThread(i, numOfCustomers, maxItemID, numOfPurchase, numOfItems, date, IPAddress, phase1Latch, totalLatch, centralRegion, westRegion, stats);
       new Thread(thread).start();
     }
 //    phase1Latch.await();
@@ -67,10 +70,10 @@ public class Main {
     centralRegion.await();
     System.out.println("Centrl Activated");
     CountDownLatch phase2Latch = new CountDownLatch(numThreadTwo);
-    for (int i = 3; i <= 4; i++) {
+    for (int i = 0; i < numThreadTwo; i++) {
       // creation a thread object implmenting runnable
       // need  custID and itemIDs
-      Runnable thread = new StoreThread(i, numOfCustomers, maxItemID, numOfPurchase, numOfItems, date, IPAddress, phase2Latch, totalLatch, centralRegion, westRegion);
+      Runnable thread = new StoreThread(i, numOfCustomers, maxItemID, numOfPurchase, numOfItems, date, IPAddress, phase2Latch, totalLatch, centralRegion, westRegion, stats);
       new Thread(thread).start();
     }
 ////    phase2Latch.await();
@@ -78,18 +81,26 @@ public class Main {
     westRegion.await();
     System.out.println("West Activated");
     CountDownLatch phase3Latch = new CountDownLatch(numThreadThree);
-    for (int i = 5; i <= 6; i++) {
+    for (int i = 0; i < numThreadThree; i++) {
       // creation a thread object implmenting runnable
       // need  custID and itemIDs
-      Runnable thread = new StoreThread(i, numOfCustomers, maxItemID, numOfPurchase, numOfItems, date, IPAddress, phase3Latch, totalLatch, centralRegion, westRegion);
+      Runnable thread = new StoreThread(i, numOfCustomers, maxItemID, numOfPurchase, numOfItems, date, IPAddress, phase3Latch, totalLatch, centralRegion, westRegion, stats);
       new Thread(thread).start();
     }
 //    phase3Latch.await();
     totalLatch.await();
+    Timestamp endTime = new Timestamp(System.currentTimeMillis());
     //total number of successful requests sent
+    System.out.println("Number of Successful Posts: " + stats.getSuccessfulPosts());
     //total number of unsuccessful requests (ideally should be 0)
+    System.out.println("Number of Failed Posts: " + stats.getFailedPosts());
     //the total run time (wall time) for all phases to complete. Calculate this by taking a timestamp before commencing Phase 1 and another after all Phase 3 threads are complete.
+    long wallTime = (endTime.getTime() - startTime.getTime()) / 1000;
+    System.out.println("Wall Time is: " + wallTime + " seconds");
     //throughput = requests per second = total number of requests/wall time
+    Integer totalRequests = maxStores * 9 * numOfPurchase;
+    System.out.println("Total Post Requests: " + totalRequests);
+    System.out.println("Throughput is: " + (totalRequests / wallTime) + " requests/seconds");
 
   }
 }
