@@ -1,8 +1,12 @@
-import io.swagger.client.*;
-import io.swagger.client.auth.*;
-import io.swagger.client.model.*;
+import io.swagger.client.ApiClient;
+import io.swagger.client.ApiException;
 import io.swagger.client.api.PurchaseApi;
-import java.util.Random;
+import io.swagger.client.model.Purchase;
+import io.swagger.client.model.PurchaseItems;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 
 public class StoreThread implements Runnable {
@@ -20,11 +24,12 @@ public class StoreThread implements Runnable {
   private CountDownLatch centralRegion;
   private CountDownLatch westRegion;
   private ShareStats stats;
+  private BlockingQueue bq;
 
   public StoreThread(Integer storeID, Integer numOfCustomers, Integer maxItemID,
       Integer numOfPurchases, Integer numOfItems, String date, Integer IPAddresse,
       CountDownLatch phaseLatch, CountDownLatch totalLatch, CountDownLatch centralRegion,
-      CountDownLatch westRegion, ShareStats stats){
+      CountDownLatch westRegion, ShareStats stats, BlockingQueue bq){
     this.storeID = storeID;
     this.numOfCustomers = numOfCustomers;
     this.maxItemID = maxItemID;
@@ -37,6 +42,7 @@ public class StoreThread implements Runnable {
     this.centralRegion = centralRegion;
     this.westRegion = westRegion;
     this.stats = stats;
+    this.bq = bq;
   }
 
 
@@ -57,14 +63,18 @@ public class StoreThread implements Runnable {
     PurchaseApi apiInstance = new PurchaseApi(apiclient);
     int successfulPost = 0;
     int failedPost = 0;
+    int resCode;
+    List<String> result = new ArrayList<String>();
+    Timestamp startLatencyTime;
+    Timestamp endLatencyTime;
 
     // sending total of numpurchases * 9 hours of post requests
     for (int i = 0; i < this.numOfPurchase * 9; i++) {
       //Generate the default number of items purchased (randomly select itemID) and set amount to 1.
       Purchase body = new Purchase();
-      for (int j = 0; j < this.numOfItems; j++){
+      for (int j = 0; j < this.numOfItems; j++) {
         PurchaseItems item = new PurchaseItems();
-        Integer rand_itemID = (int)(Math.random() * (maxItemID - MIN_ITEM_ID + 1) + MIN_ITEM_ID);
+        Integer rand_itemID = (int) (Math.random() * (maxItemID - MIN_ITEM_ID + 1) + MIN_ITEM_ID);
         item.setItemID(Integer.toString(rand_itemID));
         item.setNumberOfItems(AMOUNT);
         body.addItemsItem(item);
@@ -74,13 +84,17 @@ public class StoreThread implements Runnable {
       //(storeIDx1000) and (storeIDx1000)+number of customers/store
       Integer min = this.storeID * 1000;
       Integer max = this.storeID * 1000 + this.numOfCustomers;
-      int custID = (int)(Math.random() * (max - min + 1) + min);
+      int custID = (int) (Math.random() * (max - min + 1) + min);
 
+      // start of latency time
+      startLatencyTime = new Timestamp(System.currentTimeMillis());
       // how to signal when reach 3 hours of purchases
       //send posts requests
       try {
         apiInstance.newPurchase(body, this.storeID, custID, date);
-        successfulPost ++;
+        endLatencyTime = new Timestamp(System.currentTimeMillis());
+        successfulPost++;
+        resCode = 200;
         //while loop to check if it reaches 3 * numofPurchases then notifyAll
         if (successfulPost == 3 * numOfPurchase) {
           this.centralRegion.countDown();
@@ -88,13 +102,25 @@ public class StoreThread implements Runnable {
           this.westRegion.countDown();
         }
       } catch (ApiException e) {
-        failedPost ++;
+        endLatencyTime = new Timestamp(System.currentTimeMillis());
+        failedPost++;
+        resCode = e.getCode();
         //log error to stderr
         System.err.printf("Failed to Send a Request!");
         e.printStackTrace();
       }
-
+      long latency = endLatencyTime.getTime() - startLatencyTime.getTime();
+      String msg = startLatencyTime.toString() + ", POST, " + latency + ", " + resCode + "\n";
+      result.add(msg);
     }
+
+    //put latency data into blocking queue
+    try {
+      bq.put(result);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+
     //update total successful count using lock
     this.stats.addSuccessfulPosts(successfulPost);
     this.stats.addSuccessfulPosts(failedPost);

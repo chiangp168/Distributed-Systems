@@ -35,14 +35,12 @@ public class Servlet extends HttpServlet {
     try {
       if (!isUrlValid(urlParts)) {
         res.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        res.getWriter().write("Invalid Input");
       } else {
         res.setStatus(HttpServletResponse.SC_OK);
-        res.getWriter().write("URL works!");
+        Purchase p = gson.fromJson(req.getReader(), Purchase.class);
       }
     } catch (ParseException e) {
       res.setStatus(HttpServletResponse.SC_NOT_FOUND);
-      res.getWriter().write("Date Not Found");
     }
 
   }

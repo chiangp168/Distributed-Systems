@@ -1,8 +1,12 @@
-public class Item {
+import com.google.gson.annotations.SerializedName;
+
+public class PurchaseItems {
+  @SerializedName("itemID")
   private String itemId;
+  @SerializedName("numberOfItems:")
   private Integer numOfItems;
 
-  public Item(String itemId, Integer numOfItems) {
+  public PurchaseItems(String itemId, Integer numOfItems) {
     this.itemId = itemId;
     this.numOfItems = numOfItems;
   }
@@ -21,5 +25,10 @@ public class Item {
 
   public void setItemId(String itemId) {
     this.itemId = itemId;
+  }
+
+  @Override
+  public String toString() {
+    return "PurchaseItems Class {itemID=" + itemId + ", numOfItems=" + numOfItems + "}";
   }
 }
