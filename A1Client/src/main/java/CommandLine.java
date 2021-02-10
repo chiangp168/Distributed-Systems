@@ -1,13 +1,20 @@
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class CommandLine {
-  private final int ONEINPUT = 1;
+  private final int TWOINPUT = 2;
   private final int SEVENINPUTS = 7;
+  private final int MINSTORE = 4;
+  private final int MINITEM = 1;
+  private final int MAXITEM = 20;
   private Integer maxStores;
   private Integer numOfCustomers;
   private Integer maxItemID;
   private Integer numOfPurchase;
   private Integer numOfItems;
   private String date;
-  private Integer IPAddress;
+  private String IPAddress;
 
 //  maximum number of stores to simulate (maxStores)
 //  number of customers/store (default 1000). This is the range of custIDs per store
@@ -24,49 +31,78 @@ public class CommandLine {
     this.numOfPurchase = 60;
     this.numOfItems = 5;
     this.date = "20210101";
-    this.IPAddress = 8080;
+    this.IPAddress = null;
   }
 
   public boolean validateInput(String[] inputs) {
-    System.out.println(inputs.length);
-    if (inputs.length != ONEINPUT && inputs.length != SEVENINPUTS) {
-      System.out.println("1");
+    if (inputs.length != TWOINPUT && inputs.length != SEVENINPUTS) {
       return false;}
-    if(inputs.length == 1) {
-      System.out.println("2");
+    if(inputs.length == TWOINPUT) {
       try{
-        System.out.println("Parsing...");
         this.maxStores = Integer.parseInt(inputs[0]);
+        if (this.maxStores < MINSTORE) {
+          return false;
+        }
+        this.IPAddress = inputs[1];
+        if (this.IPAddress == null){
+          return false;
+        }
       }catch(NumberFormatException exception){
         return false;
       }
     } else {
       try {
-        System.out.println("Parsing1...");
         this.maxStores = Integer.parseInt(inputs[0]);
-        System.out.println("Parsing2...");
-        this.numOfCustomers = Integer.parseInt(inputs[1]);
-        System.out.println("Parsing3...");
-        this.maxItemID = Integer.parseInt(inputs[2]);
-        System.out.println("Parsing4...");
-        this.numOfPurchase = Integer.parseInt(inputs[3]);
-        System.out.println("Parsing5...");
-        this.numOfItems = Integer.parseInt(inputs[4]);
-        System.out.println("Parsing6...");
-        if(this.numOfItems < 1 || this.numOfItems > 20) {
-          System.out.println("Num of Items should range between 1-20.");
+        if (this.maxStores < MINSTORE) {
           return false;
         }
-        System.out.println("Parsing7...");
+        this.numOfCustomers = Integer.parseInt(inputs[1]);
+        if (this.numOfCustomers < 0) {
+          return false;
+        }
+        this.maxItemID = Integer.parseInt(inputs[2]);
+        if (this.maxItemID < 0) {
+          return false;
+        }
+        this.numOfPurchase = Integer.parseInt(inputs[3]);
+        if (this.numOfPurchase < 0) {
+          return false;
+        }
+        this.numOfItems = Integer.parseInt(inputs[4]);
+        if(this.numOfItems < MINITEM || this.numOfItems > MAXITEM) {
+          return false;
+        }
         this.date = inputs[5];
-        System.out.println("Parsing8...");
-        this.IPAddress = Integer.parseInt(inputs[6]);
+        boolean validDate = isDateValid(this.date);
+        if (!validDate) {
+          return false;
+        }
+        this.IPAddress = inputs[6];
+        if (this.IPAddress == null){
+          return false;
+        }
       } catch (NumberFormatException exception) {
         System.out.println("Please enter integer values for <max Stores>, <num of Customers>," +
             "<max itemID>, <num of Purchases>, <num of Items range 1-20>, <date in yyyyMMdd>" +
             "and <port num>");
         return false;
+      } catch (ParseException e) {
+        e.printStackTrace();
       }
+    }
+    return true;
+  }
+
+  private boolean isDateValid(String input) throws ParseException {
+    // reference https://stackoverflow.com/questions/20231539/java-check-the-date-format-of-current-string-is-according-to-required-format-or
+    SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
+    format.setLenient(false);
+    Date inputDate = null;
+    try{
+      inputDate = format.parse(input);
+    } catch(NumberFormatException exception){
+      System.out.println("Wrong Date Format");
+      return false;
     }
     return true;
   }
@@ -95,7 +131,7 @@ public class CommandLine {
     return date;
   }
 
-  public Integer getIPAddress() {
+  public String getIPAddress() {
     return IPAddress;
   }
 }

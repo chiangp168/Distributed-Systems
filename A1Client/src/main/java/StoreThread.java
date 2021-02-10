@@ -1,8 +1,6 @@
 import io.swagger.client.*;
-import io.swagger.client.auth.*;
 import io.swagger.client.model.*;
 import io.swagger.client.api.PurchaseApi;
-import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 
 public class StoreThread implements Runnable {
@@ -14,28 +12,26 @@ public class StoreThread implements Runnable {
   private Integer numOfPurchase;
   private Integer numOfItems;
   private String date;
-  private Integer IPAddress;
-  private CountDownLatch phaseLatch;
+  private String url;
   private CountDownLatch totalLatch;
-  private CountDownLatch centralRegion;
-  private CountDownLatch westRegion;
+  private CountDownLatch phase2Latch;
+  private CountDownLatch phase3Latch;
   private ShareStats stats;
 
   public StoreThread(Integer storeID, Integer numOfCustomers, Integer maxItemID,
-      Integer numOfPurchases, Integer numOfItems, String date, Integer IPAddresse,
-      CountDownLatch phaseLatch, CountDownLatch totalLatch, CountDownLatch centralRegion,
-      CountDownLatch westRegion, ShareStats stats){
+      Integer numOfPurchases, Integer numOfItems, String date, String IPAddress,
+      CountDownLatch totalLatch, CountDownLatch phase2Latch,
+      CountDownLatch phase3Latch, ShareStats stats){
     this.storeID = storeID;
     this.numOfCustomers = numOfCustomers;
     this.maxItemID = maxItemID;
     this.numOfPurchase = numOfPurchases;
     this.numOfItems = numOfItems;
     this.date = date;
-    this.IPAddress = IPAddresse;
-    this.phaseLatch = phaseLatch;
+    this.url = url(IPAddress);
     this.totalLatch = totalLatch;
-    this.centralRegion = centralRegion;
-    this.westRegion = westRegion;
+    this.phase2Latch = phase2Latch;
+    this.phase3Latch = phase3Latch;
     this.stats = stats;
   }
 
@@ -53,7 +49,7 @@ public class StoreThread implements Runnable {
   @Override
   public void run() {
     ApiClient apiclient = new ApiClient();
-    apiclient.setBasePath("http://localhost:8080/A1Server_war_exploded");
+    apiclient.setBasePath(this.url);
     PurchaseApi apiInstance = new PurchaseApi(apiclient);
     int successfulPost = 0;
     int failedPost = 0;
@@ -69,9 +65,8 @@ public class StoreThread implements Runnable {
         item.setNumberOfItems(AMOUNT);
         body.addItemsItem(item);
       }
-//      System.out.println("This is store " + this.storeID + "with request # " + i);
-      //select custID
-      //(storeIDx1000) and (storeIDx1000)+number of customers/store
+
+      //select custID (storeIDx1000) and (storeIDx1000)+number of customers/store
       Integer min = this.storeID * 1000;
       Integer max = this.storeID * 1000 + this.numOfCustomers;
       int custID = (int)(Math.random() * (max - min + 1) + min);
@@ -82,10 +77,10 @@ public class StoreThread implements Runnable {
         apiInstance.newPurchase(body, this.storeID, custID, date);
         successfulPost ++;
         //while loop to check if it reaches 3 * numofPurchases then notifyAll
-        if (successfulPost == 3 * numOfPurchase) {
-          this.centralRegion.countDown();
-        } else if (successfulPost == 5 * numOfPurchase) {
-          this.westRegion.countDown();
+        if ((successfulPost + failedPost) == 3 * numOfPurchase) {
+          this.phase2Latch.countDown();
+        } else if ((successfulPost + failedPost) == 5 * numOfPurchase) {
+          this.phase3Latch.countDown();
         }
       } catch (ApiException e) {
         failedPost ++;
@@ -97,10 +92,15 @@ public class StoreThread implements Runnable {
     }
     //update total successful count using lock
     this.stats.addSuccessfulPosts(successfulPost);
-    this.stats.addSuccessfulPosts(failedPost);
-
-    //count down each thread
-    this.phaseLatch.countDown();
+    this.stats.addFailedPosts(failedPost);
     this.totalLatch.countDown();
+  }
+
+  private static String url (String IPAddress) {
+    if (IPAddress.equals("localhost")) {
+      return "http://localhost:8080/A1Server_war_exploded";
+    } else {
+      return "http://" + IPAddress + ":8080/A1Server_war";
+    }
   }
 }

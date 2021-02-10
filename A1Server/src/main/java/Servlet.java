@@ -45,9 +45,7 @@ public class Servlet extends HttpServlet {
 
   }
 
-
   private boolean isUrlValid(String[] urlPath) throws ParseException {
-    // TODO: validate the request url path according to the API spec
     // urlPath  = "purchase/{storeID}/customer/{custID}/date/{date}"
     // urlParts = [purchase, int32, customer, int32, date, string]
     if (urlPath.length < URL_Length) {return false;}
@@ -73,7 +71,7 @@ public class Servlet extends HttpServlet {
     try{
       inputDate = format.parse(input);
     } catch(NumberFormatException exception){
-      System.out.println("Wrong");
+      System.out.println("Wrong Date Format");
       return false;
     }
     return true;

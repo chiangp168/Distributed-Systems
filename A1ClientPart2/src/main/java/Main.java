@@ -1,33 +1,19 @@
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Scanner;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class Main {
 
-  public static void main(String[] args) throws InterruptedException {
-    // Testing code
-//    ApiClient apiclient = new ApiClient();
-//    apiclient.setBasePath("http://localhost:8080/Assignment1_war_exploded");
-//    PurchaseApi apiInstance = new PurchaseApi(apiclient);
-//    Purchase body = new Purchase(); // Purchase | items purchased
-//    Integer storeID = 56; // Integer | ID of the store the purchase takes place at
-//    Integer custID = 56; // Integer | customer ID making purchase
-//    //String date = "date_example"; // String | date of purchase
-//    String date = "20210233"; // String | date of purchase
-//    try {
-//      apiInstance.newPurchase(body, storeID, custID, date);
-////      ApiResponse<Void> response = apiInstance.newPurchaseWithHttpInfo(body, storeID, custID, date);
-////
-////      System.out.println(response.getStatusCode());
-//
-//    } catch (ApiException e) {
-//      System.err.println("Exception when calling PurchaseApi#newPurchase");
-//      e.printStackTrace();
-//    }
+  public static void main(String[] args) throws InterruptedException, IOException {
     // 8, 5, 10000, 10, 5, "20210101", 8080
     CommandLine cl = new CommandLine();
     if (!cl.validateInput(args)) {
@@ -40,7 +26,7 @@ public class Main {
     Integer numOfPurchase = cl.getNumOfPurchase();
     Integer numOfItems = cl.getNumOfItems();
     String date = cl.getDate();
-    Integer IPAddress = cl.getIPAddress();
+    String IPAddress = cl.getIPAddress();
     ShareStats stats = new ShareStats();
 
     Integer numThreadOne = (int ) Math.floor(maxStores / 4.0);
@@ -56,46 +42,34 @@ public class Main {
 
     //Create CountDownLatch
     CountDownLatch totalLatch = new CountDownLatch(maxStores);
-    CountDownLatch centralRegion = new CountDownLatch(1);
-    CountDownLatch westRegion = new CountDownLatch(1);
+    CountDownLatch phase2Latch = new CountDownLatch(1);
+    CountDownLatch phase3Latch = new CountDownLatch(1);
 
-    //Phase one
-    CountDownLatch phase1Latch = new CountDownLatch(numThreadOne);
-    System.out.println("Phase 1");
+    Integer phase1MinStore = 1;
+    Integer phase1MaxStore = phase1MinStore + numThreadOne;
+    Integer phase2MinStore = phase1MaxStore;
+    Integer phase2MaxStore = phase2MinStore + numThreadTwo;
+    Integer phase3MinStore = phase2MaxStore;
+    Integer phase3MaxStore = phase3MinStore + numThreadThree;
+
     Timestamp startWallTime = new Timestamp(System.currentTimeMillis());
-    for (int i = 0; i < numThreadOne; i++) {
-      // creation a thread object implmenting runnable
-      // need  custID and itemIDs
-      Runnable thread = new StoreThread(i, numOfCustomers, maxItemID, numOfPurchase, numOfItems,
-          date, IPAddress, phase1Latch, totalLatch, centralRegion, westRegion, stats, bq);
-      new Thread(thread).start();
-    }
+    //Phase one
+    runPhase(phase1MinStore, phase1MaxStore, numOfCustomers, maxItemID, numOfPurchase, numOfItems, date, IPAddress,
+        totalLatch, phase2Latch, phase3Latch, stats, bq);
 
     //Phase two
-//    centralRegion.await();
-    System.out.println("Central Activated");
-    CountDownLatch phase2Latch = new CountDownLatch(numThreadTwo);
-    for (int i = 0; i < numThreadTwo; i++) {
-      // creation a thread object implmenting runnable
-      // need  custID and itemIDs
-      Runnable thread = new StoreThread(i, numOfCustomers, maxItemID, numOfPurchase, numOfItems,
-          date, IPAddress, phase2Latch, totalLatch, centralRegion, westRegion, stats, bq);
-      new Thread(thread).start();
-    }
+    phase2Latch.await();
+    runPhase(phase2MinStore, phase2MaxStore, numOfCustomers, maxItemID, numOfPurchase, numOfItems, date, IPAddress,
+        totalLatch, phase2Latch, phase3Latch, stats, bq);
 
-//    //Phase three
-//    westRegion.await();
-    System.out.println("West Activated");
-    CountDownLatch phase3Latch = new CountDownLatch(numThreadThree);
-    for (int i = 0; i < numThreadThree; i++) {
-      // creation a thread object implmenting runnable
-      // need  custID and itemIDs
-      Runnable thread = new StoreThread(i, numOfCustomers, maxItemID, numOfPurchase, numOfItems,
-          date, IPAddress, phase3Latch, totalLatch, centralRegion, westRegion, stats, bq);
-      new Thread(thread).start();
-    }
+    //Phase three
+    phase3Latch.await();
+    runPhase(phase3MinStore, phase3MaxStore, numOfCustomers, maxItemID, numOfPurchase, numOfItems, date, IPAddress,
+        totalLatch, phase2Latch, phase3Latch, stats, bq);
 
     totalLatch.await();
+    Timestamp endWallTime = new Timestamp(System.currentTimeMillis());
+
     List<String> exit = Arrays.asList("exit");
     bq.put(exit);
     try {
@@ -104,17 +78,56 @@ public class Main {
 
     }
 
-    Timestamp endWallTime = new Timestamp(System.currentTimeMillis());
-    //total number of successful requests sent
+    //Calculate the mean
+    Integer totalTime = 0;
+    Integer maxTime = Integer.MIN_VALUE;
+
+    List<Integer> allTime = writeFile.getAllTime();
+    for(Integer time: allTime) {
+      totalTime += time;
+      if (time > maxTime) {
+          maxTime = time;
+       }
+    }
+
+    Integer mean = totalTime / allTime.size();
+
+    System.out.println("Mean Response Time: " + mean);
+    System.out.println("Max Response Time: " + maxTime);
+
+    //Calculate median
+    Collections.sort(allTime);
+    Double median;
+    Integer arraySize = allTime.size();
+    if (arraySize % 2 == 0) {
+      Integer sum = allTime.get(arraySize / 2 - 1) + allTime.get(arraySize / 2);
+      median = sum / 2.0;
+    } else {
+      median = (double) allTime.get(arraySize / 2);
+    }
+    System.out.println("Median: " + median);
+
+    //calculate 99 percentile
+    Integer ninetyNine = allTime.get((int)Math.ceil((0.99 * arraySize)));
+    System.out.println("99 Percentile: " + ninetyNine);
+
     System.out.println("Number of Successful Posts: " + stats.getSuccessfulPosts());
-    //total number of unsuccessful requests (ideally should be 0)
     System.out.println("Number of Failed Posts: " + stats.getFailedPosts());
-    //the total run time (wall time) for all phases to complete. Calculate this by taking a timestamp before commencing Phase 1 and another after all Phase 3 threads are complete.
     long wallTime = (endWallTime.getTime() - startWallTime.getTime()) / 1000;
     System.out.println("Wall Time is: " + wallTime + " seconds");
-    //throughput = requests per second = total number of requests/wall time
     Integer totalRequests = maxStores * 9 * numOfPurchase;
     System.out.println("Total Post Requests: " + totalRequests);
     System.out.println("Throughput is: " + (totalRequests / wallTime) + " requests/seconds");
+  }
+
+  private static void runPhase (Integer startingstoreID, Integer numThread, Integer numOfCustomers,
+      Integer maxItemID, Integer numOfPurchase, Integer numOfItems, String date, String IPAddress,
+      CountDownLatch totalLatch, CountDownLatch phase2Latch, CountDownLatch phase3Latch,
+      ShareStats stats, BlockingQueue bq){
+    for (int i = startingstoreID; i < numThread; i++) {
+      Runnable thread = new StoreThread(i, numOfCustomers, maxItemID, numOfPurchase, numOfItems,
+          date, IPAddress, totalLatch, phase2Latch, phase3Latch, stats, bq);
+      new Thread(thread).start();
+    }
   }
 }

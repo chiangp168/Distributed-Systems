@@ -18,29 +18,27 @@ public class StoreThread implements Runnable {
   private Integer numOfPurchase;
   private Integer numOfItems;
   private String date;
-  private Integer IPAddress;
-  private CountDownLatch phaseLatch;
+  private String url;
   private CountDownLatch totalLatch;
-  private CountDownLatch centralRegion;
-  private CountDownLatch westRegion;
+  private CountDownLatch phase2Latch;
+  private CountDownLatch phase3Latch;
   private ShareStats stats;
   private BlockingQueue bq;
 
   public StoreThread(Integer storeID, Integer numOfCustomers, Integer maxItemID,
-      Integer numOfPurchases, Integer numOfItems, String date, Integer IPAddresse,
-      CountDownLatch phaseLatch, CountDownLatch totalLatch, CountDownLatch centralRegion,
-      CountDownLatch westRegion, ShareStats stats, BlockingQueue bq){
+      Integer numOfPurchases, Integer numOfItems, String date, String IPAddress,
+      CountDownLatch totalLatch, CountDownLatch phase2Latch,
+      CountDownLatch phase3Latch, ShareStats stats, BlockingQueue bq){
     this.storeID = storeID;
     this.numOfCustomers = numOfCustomers;
     this.maxItemID = maxItemID;
     this.numOfPurchase = numOfPurchases;
     this.numOfItems = numOfItems;
     this.date = date;
-    this.IPAddress = IPAddresse;
-    this.phaseLatch = phaseLatch;
+    this.url = url(IPAddress);
     this.totalLatch = totalLatch;
-    this.centralRegion = centralRegion;
-    this.westRegion = westRegion;
+    this.phase2Latch = phase2Latch;
+    this.phase3Latch = phase3Latch;
     this.stats = stats;
     this.bq = bq;
   }
@@ -59,7 +57,7 @@ public class StoreThread implements Runnable {
   @Override
   public void run() {
     ApiClient apiclient = new ApiClient();
-    apiclient.setBasePath("http://localhost:8080/A1Server_war_exploded");
+    apiclient.setBasePath(url);
     PurchaseApi apiInstance = new PurchaseApi(apiclient);
     int successfulPost = 0;
     int failedPost = 0;
@@ -70,6 +68,7 @@ public class StoreThread implements Runnable {
 
     // sending total of numpurchases * 9 hours of post requests
     for (int i = 0; i < this.numOfPurchase * 9; i++) {
+      System.out.println(this.storeID + " # " + i);
       //Generate the default number of items purchased (randomly select itemID) and set amount to 1.
       Purchase body = new Purchase();
       for (int j = 0; j < this.numOfItems; j++) {
@@ -96,10 +95,10 @@ public class StoreThread implements Runnable {
         successfulPost++;
         resCode = 200;
         //while loop to check if it reaches 3 * numofPurchases then notifyAll
-        if (successfulPost == 3 * numOfPurchase) {
-          this.centralRegion.countDown();
-        } else if (successfulPost == 5 * numOfPurchase) {
-          this.westRegion.countDown();
+        if ((successfulPost + failedPost) == 3 * numOfPurchase) {
+            this.phase2Latch.countDown();
+        } else if ((successfulPost + failedPost) == 5 * numOfPurchase) {
+          this.phase3Latch.countDown();
         }
       } catch (ApiException e) {
         endLatencyTime = new Timestamp(System.currentTimeMillis());
@@ -110,7 +109,7 @@ public class StoreThread implements Runnable {
         e.printStackTrace();
       }
       long latency = endLatencyTime.getTime() - startLatencyTime.getTime();
-      String msg = startLatencyTime.toString() + ", POST, " + latency + ", " + resCode + "\n";
+      String msg = startLatencyTime.toString() + ",POST," + latency + "," + resCode + "\n";
       result.add(msg);
     }
 
@@ -123,10 +122,17 @@ public class StoreThread implements Runnable {
 
     //update total successful count using lock
     this.stats.addSuccessfulPosts(successfulPost);
-    this.stats.addSuccessfulPosts(failedPost);
+    this.stats.addFailedPosts(failedPost);
 
     //count down each thread
-    this.phaseLatch.countDown();
     this.totalLatch.countDown();
+  }
+
+  private static String url (String IPAddress) {
+    if (IPAddress.equals("localhost")) {
+      return "http://localhost:8080/A1Server_war_exploded";
+    } else {
+      return "http://" + IPAddress + ":8080/A1Server_war";
+    }
   }
 }
