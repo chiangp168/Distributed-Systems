@@ -28,7 +28,7 @@ public class CommandLine {
     this.maxStores = 0;
     this.numOfCustomers = 1000;
     this.maxItemID = 100000;
-    this.numOfPurchase = 60;
+    this.numOfPurchase = 300;
     this.numOfItems = 5;
     this.date = "20210101";
     this.IPAddress = null;

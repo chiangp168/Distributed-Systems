@@ -92,8 +92,8 @@ public class Main {
 
     Integer mean = totalTime / allTime.size();
 
-    System.out.println("Mean Response Time: " + mean);
-    System.out.println("Max Response Time: " + maxTime);
+    System.out.println("Mean Response Time: " + mean + " ms");
+    System.out.println("Max Response Time: " + maxTime + " ms");
 
     //Calculate median
     Collections.sort(allTime);
@@ -105,19 +105,18 @@ public class Main {
     } else {
       median = (double) allTime.get(arraySize / 2);
     }
-    System.out.println("Median: " + median);
+    System.out.println("Median Response Time: " + median + " ms");
 
     //calculate 99 percentile
     Integer ninetyNine = allTime.get((int)Math.ceil((0.99 * arraySize)));
-    System.out.println("99 Percentile: " + ninetyNine);
+    System.out.println("99 Percentile: " + ninetyNine + " ms");
 
     System.out.println("Number of Successful Posts: " + stats.getSuccessfulPosts());
     System.out.println("Number of Failed Posts: " + stats.getFailedPosts());
+    System.out.println("Total Post Requests: " + (stats.getSuccessfulPosts() + stats.getFailedPosts()));
     long wallTime = (endWallTime.getTime() - startWallTime.getTime()) / 1000;
     System.out.println("Wall Time is: " + wallTime + " seconds");
-    Integer totalRequests = maxStores * 9 * numOfPurchase;
-    System.out.println("Total Post Requests: " + totalRequests);
-    System.out.println("Throughput is: " + (totalRequests / wallTime) + " requests/seconds");
+    System.out.println("Throughput is: " + (stats.getSuccessfulPosts() / wallTime) + " requests/seconds");
   }
 
   private static void runPhase (Integer startingstoreID, Integer numThread, Integer numOfCustomers,

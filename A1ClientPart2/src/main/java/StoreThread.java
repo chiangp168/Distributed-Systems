@@ -58,6 +58,8 @@ public class StoreThread implements Runnable {
   public void run() {
     ApiClient apiclient = new ApiClient();
     apiclient.setBasePath(url);
+    apiclient.setConnectTimeout(15000);
+    apiclient.setReadTimeout(15000);
     PurchaseApi apiInstance = new PurchaseApi(apiclient);
     int successfulPost = 0;
     int failedPost = 0;
@@ -68,7 +70,6 @@ public class StoreThread implements Runnable {
 
     // sending total of numpurchases * 9 hours of post requests
     for (int i = 0; i < this.numOfPurchase * 9; i++) {
-      System.out.println(this.storeID + " # " + i);
       //Generate the default number of items purchased (randomly select itemID) and set amount to 1.
       Purchase body = new Purchase();
       for (int j = 0; j < this.numOfItems; j++) {
@@ -78,7 +79,7 @@ public class StoreThread implements Runnable {
         item.setNumberOfItems(AMOUNT);
         body.addItemsItem(item);
       }
-//      System.out.println("This is store " + this.storeID + "with request # " + i);
+
       //select custID
       //(storeIDx1000) and (storeIDx1000)+number of customers/store
       Integer min = this.storeID * 1000;
