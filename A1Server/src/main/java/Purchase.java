@@ -1,9 +1,13 @@
-import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 public class Purchase {
-  @SerializedName("items")
+//  @SerializedName("items")
+  @JsonProperty("items")
   private List<PurchaseItems> purchaseItems;
+
+  private Purchase() {
+  }
 
   public Purchase(List<PurchaseItems> purchaseItems) {
     this.purchaseItems = purchaseItems;
@@ -19,6 +23,6 @@ public class Purchase {
 
   @Override
   public String toString() {
-    return "Purchase Class {items: " + purchaseItems + " }";
+    return "{items: " + purchaseItems + " }";
   }
 }

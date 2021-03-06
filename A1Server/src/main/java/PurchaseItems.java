@@ -1,10 +1,15 @@
-import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class PurchaseItems {
-  @SerializedName("itemID")
+//  @SerializedName("ItemID")
+  @JsonProperty("ItemID")
   private String itemId;
-  @SerializedName("numberOfItems:")
+//  @SerializedName("numberOfItems:")
+  @JsonProperty("numberOfItems:")
   private Integer numOfItems;
+
+  private PurchaseItems() {
+  }
 
   public PurchaseItems(String itemId, Integer numOfItems) {
     this.itemId = itemId;
@@ -29,6 +34,6 @@ public class PurchaseItems {
 
   @Override
   public String toString() {
-    return "PurchaseItems Class {itemID=" + itemId + ", numOfItems=" + numOfItems + "}";
+    return "{itemID=" + this.itemId + ", numOfItems=" + this.numOfItems + "}";
   }
 }

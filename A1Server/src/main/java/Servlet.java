@@ -1,4 +1,7 @@
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -6,12 +9,10 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import com.google.gson.Gson;
 
 public class Servlet extends HttpServlet {
 
   // /purchase/{storeID}/customer/{custID}/date/{date}
-  private Gson gson = new Gson();
   private final String CUSTOMER_String = "customer";
   private final String DATE_String = "date";
   private final Integer URL_Length = 6;
@@ -30,17 +31,33 @@ public class Servlet extends HttpServlet {
 
     String[] urlParts = urlPath.split("/");
     // and now validate url path and return the response status code
-    // (and maybe also some value if input is valid)
-
     try {
       if (!isUrlValid(urlParts)) {
         res.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       } else {
+
+        StringBuilder sb = new StringBuilder();
+        BufferedReader reader = req.getReader();
+        try {
+          String line;
+          while ((line = reader.readLine()) != null) {
+            sb.append(line).append('\n');
+          }
+        } finally {
+          reader.close();
+        }
+        Purchase onePurchase =  new ObjectMapper().readValue(sb.toString(), Purchase.class);
+        PurchaseItemDao purchaseDao = new PurchaseItemDao();
+        purchaseDao.createPurchase(new NewItem(Integer.parseInt(urlParts[1]),
+            Integer.parseInt(urlParts[3]), urlParts[5], onePurchase.toString()));
         res.setStatus(HttpServletResponse.SC_OK);
-        Purchase p = gson.fromJson(req.getReader(), Purchase.class);
       }
     } catch (ParseException e) {
       res.setStatus(HttpServletResponse.SC_NOT_FOUND);
+    } catch (SQLException e) {
+      e.printStackTrace();
+      res.setStatus(HttpServletResponse.SC_NOT_FOUND);
+      throw new IOException(e);
     }
 
   }
