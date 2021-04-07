@@ -16,9 +16,9 @@ public class RPCClient implements AutoCloseable {
 
   public RPCClient() throws IOException, TimeoutException {
     ConnectionFactory factory = new ConnectionFactory();
-    factory.setHost("3.86.12.228");
-    factory.setUsername("chiangp");
-    factory.setPassword("4143");
+    factory.setHost("RabbitMQServerIP");
+    factory.setUsername("RabbitMQUserName");
+    factory.setPassword("RabbitMQPassword");
 
     connection = factory.newConnection();
     channel = connection.createChannel();

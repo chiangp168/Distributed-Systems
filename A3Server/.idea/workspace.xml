@@ -2,19 +2,29 @@
 <project version="4">
   <component name="ArtifactsWorkspaceSettings">
     <artifacts-to-build>
-      <artifact name="A3Server:war exploded" />
+      <artifact name="A3Server:war" />
     </artifacts-to-build>
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c393cb2b-3e17-4746-90a4-50ac3de44b7b" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/../A1ClientPart2/result.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../A1ClientPart2/result.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ChannelFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ChannelFactory.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/NewItem.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/Model/NewItem.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/A3Server_war/A3Server_war.war" beforeDir="false" afterPath="$PROJECT_DIR$/out/artifacts/A3Server_war/A3Server_war.war" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/A3Server_war_exploded/WEB-INF/classes/NewItem.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/A3Server_war_exploded/WEB-INF/classes/PostServlet.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/artifacts/A3Server_war_exploded/WEB-INF/classes/PostServlet.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/A3Server_war_exploded/WEB-INF/classes/Purchase.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/A3Server_war_exploded/WEB-INF/classes/PurchaseItems.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/A3Server_war_exploded/WEB-INF/classes/Top10SoldAtStore.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/artifacts/A3Server_war_exploded/WEB-INF/classes/Top10SoldAtStore.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/A3Server_war_exploded/WEB-INF/classes/Top10StoresOfAItem.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/artifacts/A3Server_war_exploded/WEB-INF/classes/Top10StoresOfAItem.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/PostServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/PostServlet.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/Purchase.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/Model/Purchase.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/PurchaseItems.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/Model/PurchaseItems.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/Top10SoldAtStore.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/Top10SoldAtStore.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/Top10StoresOfAItem.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/Top10StoresOfAItem.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/RPCClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/RPCClient.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/MQConnection.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/NewItem.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/PostServlet.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/PostServlet.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/Purchase.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/PurchaseItems.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/Top10SoldAtStore.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/Top10SoldAtStore.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/Top10StoresOfAItem.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/Top10StoresOfAItem.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -175,7 +185,7 @@
       <option name="presentableId" value="Default" />
       <updated>1617736219498</updated>
       <workItem from="1617736223914" duration="17565000" />
-      <workItem from="1617809896763" duration="14548000" />
+      <workItem from="1617809896763" duration="15054000" />
     </task>
     <servers />
   </component>

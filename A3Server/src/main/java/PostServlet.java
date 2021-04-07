@@ -27,7 +27,6 @@ public class PostServlet extends HttpServlet{
   private final Integer URL_Length = 6;
   private final Integer MAX_IDLE = 10;
   private static final String EXCHANGE_NAME = "PurchaseDB";
-  private static final String QUEUE_NAME = "DBQueue";
   private static ObjectPool<Channel> pool;
   public static Connection connection;
   private static ConnectionFactory factory;
@@ -38,9 +37,9 @@ public class PostServlet extends HttpServlet{
 
   public void init() throws ServletException{
     factory = new ConnectionFactory();
-    factory.setHost("3.86.12.228");
-    factory.setUsername("chiangp");
-    factory.setPassword("4143");
+    factory.setHost("RabbitMQServerIP");
+    factory.setUsername("RabbitMQUserName");
+    factory.setPassword("RabbitMQPassword");
 //    factory.setHost("localhost");
     firstChannel = null;
     try {
