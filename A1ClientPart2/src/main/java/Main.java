@@ -1,12 +1,9 @@
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Scanner;
+
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -107,7 +104,7 @@ public class Main {
     }
     System.out.println("Median Response Time: " + median + " ms");
 
-    //calculate 99 percentile
+//    calculate 99 percentile
     Integer ninetyNine = allTime.get((int)Math.ceil((0.99 * arraySize)));
     System.out.println("99 Percentile: " + ninetyNine + " ms");
 

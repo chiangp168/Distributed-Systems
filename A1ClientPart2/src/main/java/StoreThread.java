@@ -131,9 +131,9 @@ public class StoreThread implements Runnable {
 
   private static String url (String IPAddress) {
     if (IPAddress.equals("localhost")) {
-      return "http://localhost:8080/A1Server_war_exploded";
+      return "http://localhost:8080/A3Server_war_exploded";
     } else {
-      return "http://" + IPAddress + ":8080/A1Server_war";
+      return "http://" + IPAddress + ":8080/A3Server_war";
     }
   }
 }
