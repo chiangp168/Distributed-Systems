@@ -21,5 +21,4 @@ public class ChannelFactory extends BasePooledObjectFactory<Channel> {
   public PooledObject<Channel> wrap(Channel channel) {
     return new DefaultPooledObject<Channel>(channel);
   }
-
 }

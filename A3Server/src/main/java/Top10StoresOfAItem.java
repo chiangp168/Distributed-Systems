@@ -14,36 +14,39 @@ public class Top10StoresOfAItem extends HttpServlet {
   protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
     res.setContentType("text/plain");
     String urlPath = req.getPathInfo();
-    // check we have a URL!
+
     if (urlPath == null || urlPath.isEmpty()) {
-      res.setStatus(HttpServletResponse.SC_NOT_FOUND);
-      res.getWriter().write("missing paramterers");
+      res.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      res.getWriter().write("Missing paramterers");
       return;
     }
 
     String[] urlParts = urlPath.split("/");
-    // and now validate url path and return the response status code
-    // (and maybe also some value if input is valid)
+
     if (!isUrlValid(urlParts)) {
-      res.getWriter().write("bad url");
-      res.setStatus(HttpServletResponse.SC_NOT_FOUND);
+      res.getWriter().write("Missing paramterers");
+      res.setStatus(HttpServletResponse.SC_BAD_REQUEST);
     } else {
       String response = "";
       try (RPCClient top10SoldRPC = new RPCClient()) {
         String itemID = (urlParts[1]);
-        String requestString = "Item " + itemID;
-//        System.out.println(" [x] Requesting" + requestString);
         response += top10SoldRPC.call("Item " + itemID);
-//        System.out.println(" [.] Got '" + response + "'");
+
+        if(response != null && response.length() != 0) {
+          PrintWriter out = res.getWriter();
+          res.setContentType("application/json");
+          res.setCharacterEncoding("UTF-8");
+          out.print(response);
+          out.flush();
+          res.setStatus(HttpServletResponse.SC_OK);
+        } else {
+          res.getWriter().write("Data Not Found");
+          res.setStatus(HttpServletResponse.SC_NOT_FOUND);
+        }
+
       } catch (IOException | TimeoutException | InterruptedException e) {
         e.printStackTrace();
       }
-      PrintWriter out = res.getWriter();
-      res.setContentType("application/json");
-      res.setCharacterEncoding("UTF-8");
-      out.print(response);
-      out.flush();
-      res.setStatus(HttpServletResponse.SC_OK);
     }
   }
 

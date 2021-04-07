@@ -1,3 +1,5 @@
+import Model.NewItem;
+import Model.Purchase;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
@@ -62,8 +64,8 @@ public class PostServlet extends HttpServlet{
 
     // check we have a URL!
     if (urlPath == null || urlPath.isEmpty()) {
-      res.setStatus(HttpServletResponse.SC_NOT_FOUND);
-      res.getWriter().write("missing paramterers");
+      res.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      res.getWriter().write("Missing paramterers");
       return;
     }
 
@@ -72,6 +74,7 @@ public class PostServlet extends HttpServlet{
     try {
       if (!isUrlValid(urlParts)) {
         res.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        res.getWriter().write("Missing paramterers");
       } else {
         StringBuilder sb = new StringBuilder();
         BufferedReader reader = req.getReader();
@@ -95,7 +98,7 @@ public class PostServlet extends HttpServlet{
           channel = pool.borrowObject();
           channel.basicPublish(EXCHANGE_NAME, "", null, newItemString.getBytes("UTF-8"));
           res.setStatus(HttpServletResponse.SC_OK);
-          res.getWriter().write("posted");
+          res.getWriter().write("Request posted");
         } catch (Exception e) {
           throw new RuntimeException("Unable to borrow channel from pool" + e.toString());
         } finally {
