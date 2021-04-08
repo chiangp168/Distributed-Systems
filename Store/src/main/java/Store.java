@@ -73,7 +73,7 @@ public class Store {
 
               allItemMap.putIfAbsent(Integer.valueOf(itemID), new ConcurrentHashMap<Integer, Integer>());
               topStoreMap = allItemMap.get(Integer.valueOf(itemID));
-//              System.out.println(topStoreMap);
+
               Integer oldItems = topStoreMap.get(storeID);
               if(oldItems == null) {
                 topStoreMap.put(storeID, numOfItems);
