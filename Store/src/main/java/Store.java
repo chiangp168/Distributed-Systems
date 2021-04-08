@@ -33,11 +33,10 @@ public class Store {
   public static void main(String[] argv) throws Exception {
     ObjectMapper objectMapper = new ObjectMapper();
     ConnectionFactory factory = new ConnectionFactory();
-    factory.setHost("3.86.12.228");
-    factory.setUsername("chiangp");
-    factory.setPassword("4143");
-//    final PurchaseItemDao purchaseDao = new PurchaseItemDao();
-//    factory.setHost("localhost");
+    factory.setHost("RabbitMQServerIP");
+    factory.setUsername("RabbitMQUserName");
+    factory.setPassword("RabbitMQPassword");
+
     final Connection connection = factory.newConnection();
 
     ConcurrentHashMap<Integer, ConcurrentHashMap> allItemMap = new ConcurrentHashMap<>();
@@ -50,23 +49,18 @@ public class Store {
           final Channel channel = connection.createChannel();
           channel.exchangeDeclare(EXCHANGE_NAME, "fanout");
           channel.queueDeclare(QUEUE_NAME, false, false, false, null);
-//          String queueName = channel.queueDeclare().getQueue();
+
           channel.queueBind(QUEUE_NAME, EXCHANGE_NAME, "");
-//          channel.queueDeclare(QUEUE_NAME, true, false, false, null);
-          // max one message per receiver
-//          System.out.println(" [*] Thread waiting for messages. To exit press CTRL+C");
 
           DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String message = new String(delivery.getBody(), "UTF-8");
-//            System.out.println(
-//                "Callback thread ID = " + Thread.currentThread().getId() + " Received '" + message
-//                    + "'");
             NewPostItem item = objectMapper.readValue(message, NewPostItem.class);
             Integer storeID = item.getStoreID();
             Purchase purchase = item.getPurchase();
             storeMap.putIfAbsent(storeID, new ConcurrentHashMap<String, Integer>());
             ConcurrentHashMap<String, Integer> itemMap = storeMap.get(storeID);
             ConcurrentHashMap<Integer, Integer> topStoreMap;
+
             for(PurchaseItems p: purchase.getPurchaseItems()) {
               String itemID = p.getItemId();
               Integer numOfItems = p.getNumOfItems();
@@ -76,6 +70,7 @@ public class Store {
               } else {
                 itemMap.replace(itemID, numOfItems + oldNum);
               }
+
               allItemMap.putIfAbsent(Integer.valueOf(itemID), new ConcurrentHashMap<Integer, Integer>());
               topStoreMap = allItemMap.get(Integer.valueOf(itemID));
 //              System.out.println(topStoreMap);
@@ -87,10 +82,6 @@ public class Store {
               }
 
             }
-//            System.out.println(storeMap);
-//            System.out.println(allItemMap);
-
-
           };
           channel.basicConsume(QUEUE_NAME, true, deliverCallback, consumerTag -> {
           });
@@ -150,9 +141,8 @@ public class Store {
       }
     };
 
-    // access the queue, we provide a callback in the form of an object that will do the work and send the response back
     channel.basicConsume(RPC_QUEUE_NAME, false, deliverCallback, (consumerTag -> { }));
-    // Wait and be prepared to consume the message from RPC client.
+
     while (true) {
       synchronized (monitor) {
         try {
