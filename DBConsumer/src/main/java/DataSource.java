@@ -6,21 +6,11 @@ public class DataSource {
 
   private static HikariConfig config = new HikariConfig();
   private static HikariDataSource ds;
-//  private static final String HOST_NAME = System.getProperty("MySQL_IP_ADDRESS");
-//  private static final String PORT = System.getProperty("MySQL_PORT");
-//  private static final String DATABASE = "SupermarketApp";
-//  private static final String USERNAME = System.getProperty("DB_USERNAME");
-//  private static final String PASSWORD = System.getProperty("DB_PASSWORD");
-//  private static final String HOST_NAME = "localhost";
-//  private static final String PORT = "3306";
-//  private static final String DATABASE = "SupermarketApp";
-//  private static final String USERNAME = "root";
-//  private static final String PASSWORD = "4143";
-  private static final String HOST_NAME = "database-1.cqfv2ulxelqg.us-east-1.rds.amazonaws.com";
-  private static final String PORT = "3306";
+  private static final String HOST_NAME = System.getProperty("MySQL_IP_ADDRESS");
+  private static final String PORT = System.getProperty("MySQL_PORT");
   private static final String DATABASE = "SupermarketApp";
-  private static final String USERNAME = "chiangp";
-  private static final String PASSWORD = "Hsuan#410043";
+  private static final String USERNAME = System.getProperty("DB_USERNAME");
+  private static final String PASSWORD = System.getProperty("DB_PASSWORD");
 
   static {
     String url = String.format("jdbc:mysql://%s:%s/%s?serverTimezone=UTC", HOST_NAME, PORT, DATABASE);
