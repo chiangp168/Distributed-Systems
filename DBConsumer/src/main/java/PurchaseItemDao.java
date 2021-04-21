@@ -7,19 +7,26 @@ import java.util.UUID;
 public class PurchaseItemDao {
 
   private static DataSource ds;
+  private static DataSource2 ds2;
 
-  public PurchaseItemDao(DataSource ds) {
+  public PurchaseItemDao(DataSource ds, DataSource2 ds2) {
     this.ds = ds;
+    this.ds2 = ds2;
+
   }
 
-  public void createPurchase(NewItem newPurchase) throws SQLException{
+  public void createPurchase(NewItem newPurchase, Integer key) throws SQLException{
     Connection conn = null;
     PreparedStatement preparedStatement = null;
     String uniqueID = UUID.randomUUID().toString();
     String insertQueryStatement = "INSERT INTO Purchase (RecordId, StoreId, CustId, PurchaseDate, Items) " +
         "VALUES (?,?,?,?,?)";
     try {
-      conn = this.ds.getConnection();
+      if(key == 0) {
+        conn = this.ds.getConnection();
+      } else {
+        conn = this.ds2.getConnection();
+      }
       preparedStatement = conn.prepareStatement(insertQueryStatement);
       preparedStatement.setString(1, uniqueID);
       preparedStatement.setInt(2, newPurchase.getStoreID());

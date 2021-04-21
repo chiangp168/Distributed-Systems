@@ -16,6 +16,7 @@ public class Receive {
 
   public static void main(String[] argv) throws Exception {
     DataSource ds = new DataSource();
+    DataSource2 ds2 = new DataSource2();
     ObjectMapper objectMapper = new ObjectMapper();
     ConnectionFactory factory = new ConnectionFactory();
     factory.setHost("RabbitMQServerIP");
@@ -23,7 +24,7 @@ public class Receive {
     factory.setPassword("RabbitMQPassword");
 //    factory.setHost("localhost");
     final Connection connection = factory.newConnection();
-    PurchaseItemDao purchaseDao = new PurchaseItemDao(ds);
+    PurchaseItemDao purchaseDao = new PurchaseItemDao(ds, ds2);
 
     Runnable runnable = new Runnable() {
       @Override
@@ -38,9 +39,11 @@ public class Receive {
           DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String message = new String(delivery.getBody(), "UTF-8");
             NewItem item = objectMapper.readValue(message, NewItem.class);
+            Integer storeID = item.getStoreID();
+            Integer dbresult = storeID % 2;
 
             try {
-              purchaseDao.createPurchase(item);
+              purchaseDao.createPurchase(item, dbresult);
             } catch (SQLException e) {
               e.printStackTrace();
             }

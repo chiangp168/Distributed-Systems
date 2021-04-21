@@ -19,7 +19,6 @@ public class RPCClient implements AutoCloseable {
     factory.setHost("RabbitMQServerIP");
     factory.setUsername("RabbitMQUserName");
     factory.setPassword("RabbitMQPassword");
-
     connection = factory.newConnection();
     channel = connection.createChannel();
   }

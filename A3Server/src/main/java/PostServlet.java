@@ -25,15 +25,12 @@ public class PostServlet extends HttpServlet{
   private final String CUSTOMER_String = "customer";
   private final String DATE_String = "date";
   private final Integer URL_Length = 6;
-  private final Integer MAX_IDLE = 10;
   private static final String EXCHANGE_NAME = "PurchaseDB";
   private static ObjectPool<Channel> pool;
   public static Connection connection;
   private static ConnectionFactory factory;
   private static ChannelFactory channelFactory;
   private Channel firstChannel;
-
-
 
   public void init() throws ServletException{
     factory = new ConnectionFactory();
@@ -95,6 +92,7 @@ public class PostServlet extends HttpServlet{
         Channel channel = null;
         try {
           channel = pool.borrowObject();
+//          channel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.FANOUT);
           channel.basicPublish(EXCHANGE_NAME, "", null, newItemString.getBytes("UTF-8"));
           res.setStatus(HttpServletResponse.SC_OK);
           res.getWriter().write("Request posted");

@@ -2,7 +2,7 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
-public class DataSource {
+public class DataSource2 {
 
   private static HikariConfig config = new HikariConfig();
   private static HikariDataSource ds;
@@ -26,7 +26,7 @@ public class DataSource {
     config.setMaximumPoolSize(60);
     ds = new HikariDataSource(config);
   }
-  public DataSource() {}
+  public DataSource2() {}
 
   public static Connection getConnection() throws SQLException {
     return ds.getConnection();

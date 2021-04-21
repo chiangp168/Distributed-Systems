@@ -33,10 +33,6 @@ public class NewItem {
     return date;
   }
 
-//  public String getItems() {
-//    return items;
-//  }
-
   public Purchase getPurchase() {return purchase; }
 
 }
